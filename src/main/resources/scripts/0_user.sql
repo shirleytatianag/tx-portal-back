@@ -1,0 +1,1 @@
+INSERT INTO  main."user"(user_id, username, password, name, lastname) VALUES ('1275bb93-bbbb-47bc-ac92-faa23dfc8851','admin', '$2a$12$t37ohoDs8XNIrhqzktCbBe1HGKG4g7m/NFss71IfCIrsXyvuNiGvm', 'Shirley', 'Garcia');

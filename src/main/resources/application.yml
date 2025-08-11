@@ -1,0 +1,30 @@
+server:
+  port: 8009
+  servlet:
+    context-path: /app
+    session:
+      timeout: 300s
+spring:
+  datasource:
+    password: 12345
+    url: jdbc:postgresql://localhost:5432/transactional-portal
+    username: postgres
+  jpa:
+    generate-ddl: false
+    hibernate.ddl-auto: update
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+        hbm2ddl:
+          charset_name: UTF-8
+          import_files: scripts/0_user.sql
+settings:
+  auth:
+    token-time: 60
+  puntored:
+    base-url: https://us-central1-puntored-dev.cloudfunctions.net/technicalTest-developer/api
+    api-key: mtrQF6Q11eosqyQnkMY0JGFbGqcxVg5icvfVnX1ifIyWDvwGApJ8WUM8nHVrdSkN
+    user: user0147
+    password: '#3Q34Sh0NlDS'
