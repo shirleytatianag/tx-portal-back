@@ -13,6 +13,9 @@ import com.example.portal.transactional_portal.recharge.entity.Recharge;
 import com.example.portal.transactional_portal.recharge.repository.RechargeRepository;
 import com.example.portal.transactional_portal.recharge.service.RechargeService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -89,13 +92,19 @@ public class RechargeServiceImpl implements RechargeService {
         }
     }
 
+    @Override
+    public Page<RechargeResponse> getRecharges(String pageNumber) {
+        Pageable pageable = PageRequest.of(Integer.parseInt(pageNumber), 10);
+        return  rechargeRepository.getAllRecharges(pageable);
+    }
+
     private void validateRecharge(RechargeRequest rechargeRequest) {
         if (!rechargeRequest.getPhoneNumber().matches("^3\\d{9}$")) {
             throw new IllegalArgumentException("Número de teléfono invalido");
         }
 
         if (rechargeRequest.getAmount().compareTo(BigDecimal.valueOf(1000)) < 0 ||
-                rechargeRequest.getAmount().compareTo(BigDecimal.valueOf(10000)) > 0) {
+                rechargeRequest.getAmount().compareTo(BigDecimal.valueOf(100000)) > 0) {
             throw new IllegalArgumentException("Monto fuera de rango");
         }
     }

@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,8 +30,7 @@ public class RechargeController {
     @ApiResponse(responseCode = "200", description = "success")
     @PostMapping("/")
     public ResponseEntity<RechargeResponse> recharge(@Valid @RequestBody RechargeRequest recharge) {
-        RechargeResponse rechargeResponse = rechargeService.createRecharge(recharge);
-        return new ResponseEntity<>(rechargeResponse, HttpStatus.OK);
+        return new ResponseEntity<>(rechargeService.createRecharge(recharge), HttpStatus.OK);
     }
 
     @Operation(description = "Get recharge by ID")
@@ -41,11 +41,17 @@ public class RechargeController {
         return new ResponseEntity<>(rechargeResponse, HttpStatus.OK);
     }
 
+    @Operation(description = "Get recharges list")
+    @ApiResponse(responseCode = "200", description = "success")
+    @GetMapping("/")
+    public ResponseEntity<Page<RechargeResponse>> getRecharges(@RequestParam String pageNumber){
+        return new ResponseEntity<>(rechargeService.getRecharges(pageNumber), HttpStatus.OK);
+    }
+
     @Operation(description = "Get suppliers list")
     @ApiResponse(responseCode = "200", description = "success")
     @GetMapping("/suppliers")
     public ResponseEntity<List<SuppliersResponsePuntored>> getSuppliers(){
-        List<SuppliersResponsePuntored> rechargeResponse = rechargeService.getSuppliers();
-        return new ResponseEntity<>(rechargeResponse, HttpStatus.OK);
+        return new ResponseEntity<>(rechargeService.getSuppliers(), HttpStatus.OK);
     }
 }
