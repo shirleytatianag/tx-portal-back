@@ -2,13 +2,15 @@ package com.example.portal.transactional_portal.common.exception;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
-@ControllerAdvice
 @RestControllerAdvice
 public class CustomExceptionHandler {
 
@@ -26,7 +28,7 @@ public class CustomExceptionHandler {
     @ExceptionHandler(AlreadyExists.class)
     @ResponseBody
     @ResponseStatus(HttpStatus.CONFLICT)
-    public Map<String, String>  alreadyExistsExceptionHandler(AlreadyExists alreadyExists) {
+    public Map<String, String> alreadyExistsExceptionHandler(AlreadyExists alreadyExists) {
         Map<String, String> map = new HashMap<>();
         map.put("message", alreadyExists.getMessage());
         log.error("ConflictException {}", alreadyExists.getMessage());

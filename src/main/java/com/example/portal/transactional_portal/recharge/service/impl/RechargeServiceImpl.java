@@ -22,6 +22,8 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
+import static com.example.portal.transactional_portal.common.enums.Messages.GENERIC_SYSTEM_ERROR;
+
 @Service
 @Slf4j
 public class RechargeServiceImpl implements RechargeService {
@@ -38,7 +40,6 @@ public class RechargeServiceImpl implements RechargeService {
 
     @Override
     public RechargeResponse createRecharge(RechargeRequest rechargeRequest) {
-
         this.validateRecharge(rechargeRequest);
 
         Recharge recharge = rechargeRepository.save(
@@ -55,20 +56,11 @@ public class RechargeServiceImpl implements RechargeService {
                 )
         );
 
-        try {
-
-            AuthResponsePuntored authResponsePuntored = puntoredClient.authPuntored();
-
-            BuyResponsePuntored buyResponse = puntoredClient.buyRecharge(authResponsePuntored.getToken(), rechargeRequest);
-
-            recharge.updateResponsePuntored(buyResponse.getTransactionalID(), buyResponse.getMessage(), "SUCCESS");
-
-        } catch (Exception e) {
-            recharge.updateResponsePuntored(null, "Error: " + e.getMessage(), "FAILED");
-        }
-
+        AuthResponsePuntored authResponsePuntored = puntoredClient.authPuntored();
+        BuyResponsePuntored buyResponse = puntoredClient.buyRecharge(authResponsePuntored.getToken(), rechargeRequest);
+        recharge.updateResponsePuntored(buyResponse.getTransactionalID(), buyResponse.getMessage(), "SUCCESS");
         rechargeRepository.save(recharge);
-        
+
         return RechargeResponse.create(recharge);
     }
 
@@ -81,21 +73,20 @@ public class RechargeServiceImpl implements RechargeService {
 
     @Override
     public List<SuppliersResponsePuntored> getSuppliers() {
-        try {
+        AuthResponsePuntored authResponsePuntored = puntoredClient.authPuntored();
 
-            AuthResponsePuntored authResponsePuntored = puntoredClient.authPuntored();
-
-            return  puntoredClient.getSuppliers(authResponsePuntored.getToken());
-
-        } catch (Exception e){
-            throw new NotFoundException(Messages.GENERIC_SYSTEM_ERROR.getMessage());
+        List<SuppliersResponsePuntored> suppliers = puntoredClient.getSuppliers(authResponsePuntored.getToken());
+        if (suppliers == null) {
+            throw new NotFoundException(GENERIC_SYSTEM_ERROR.getMessage());
         }
+
+        return suppliers;
     }
 
     @Override
     public Page<RechargeResponse> getRecharges(String pageNumber) {
-        Pageable pageable = PageRequest.of(Integer.parseInt(pageNumber), 10);
-        return  rechargeRepository.getAllRecharges(pageable);
+        Pageable pageable = PageRequest.of(Integer.parseInt(pageNumber), 12);
+        return rechargeRepository.getAllRecharges(pageable);
     }
 
     private void validateRecharge(RechargeRequest rechargeRequest) {

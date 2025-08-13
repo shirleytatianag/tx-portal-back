@@ -1,5 +1,6 @@
 package com.example.portal.transactional_portal.integration.puntored;
 
+import com.example.portal.transactional_portal.auth.exception.AuthFailedException;
 import com.example.portal.transactional_portal.integration.puntored.dto.AuthResponsePuntored;
 import com.example.portal.transactional_portal.integration.puntored.dto.BuyRequestPuntored;
 import com.example.portal.transactional_portal.integration.puntored.dto.BuyResponsePuntored;
@@ -12,7 +13,6 @@ import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -20,6 +20,8 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.List;
+
+import static com.example.portal.transactional_portal.common.enums.Messages.GENERIC_SYSTEM_ERROR;
 
 
 @Service
@@ -46,78 +48,90 @@ public class PuntoredClient {
             .connectTimeout(Duration.ofSeconds(10))
             .build();
 
-    public String puntoRedProxy(String jsonRequest, String endpoint, boolean includeXApiKey, boolean includeAuthorization, String token) throws IOException, InterruptedException {
-        HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
-                .uri(URI.create(baseUrl + endpoint))
-                .header("Content-Type", contentType)
-                .POST(HttpRequest.BodyPublishers.ofString(jsonRequest))
-                .timeout(Duration.ofSeconds(10));
+    public String puntoRedProxy(String jsonRequest, String endpoint, boolean includeXApiKey, boolean includeAuthorization, String token) {
+        try {
+            HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+                    .uri(URI.create(baseUrl + endpoint))
+                    .header("Content-Type", contentType)
+                    .POST(HttpRequest.BodyPublishers.ofString(jsonRequest))
+                    .timeout(Duration.ofSeconds(10));
 
-        if (includeXApiKey) {
-            requestBuilder.header("x-api-key", apiKey);
-        }
+            if (includeXApiKey) {
+                requestBuilder.header("x-api-key", apiKey);
+            }
 
-        if (includeAuthorization) {
-            requestBuilder.header("Authorization", token);
-        }
+            if (includeAuthorization) {
+                requestBuilder.header("Authorization", token);
+            }
 
-        HttpRequest httpRequest = requestBuilder.build();
-        HttpResponse<String> httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-        if (httpResponse.statusCode() == 400){
-            throw new BadRequestException(httpResponse.body());
+            HttpRequest httpRequest = requestBuilder.build();
+            HttpResponse<String> httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+            if (httpResponse.statusCode() == 400) {
+                throw new BadRequestException(httpResponse.body());
+            }
+            return httpResponse.body();
+
+        } catch (Exception ex) {
+            log.error("Se produjo un error al realizar la petición a la API de Punto Red. {}", ex.getMessage());
+            return null;
         }
-        return httpResponse.body();
     }
 
     public AuthResponsePuntored authPuntored() {
         String jsonRequest = "{\"user\":\"" + user + "\",\"password\":\"" + password + "\"}";
 
-        try {
-            log.info("Request Auth PuntoRed: {}", jsonRequest);
-            String httpResponse = puntoRedProxy(jsonRequest, "/auth", true, false, "");
-            log.info("Response Auth PuntoRed: {}", httpResponse);
-            AuthResponsePuntored authResponsePuntored = gson.fromJson(httpResponse, AuthResponsePuntored.class);
-            return new AuthResponsePuntored(authResponsePuntored.getToken());
+        log.info("Request Auth PuntoRed: {}", jsonRequest);
+        String httpResponse = puntoRedProxy(jsonRequest, "/auth", true, false, "");
 
-        } catch (Exception e) {
-            log.error("Error Authentication PuntoRed: ({})", e.getMessage());
-            return null;
+        if (httpResponse == null) {
+            throw new AuthFailedException(GENERIC_SYSTEM_ERROR.getMessage());
         }
+
+        log.info("Response Auth PuntoRed: {}", httpResponse);
+        AuthResponsePuntored authResponsePuntored = gson.fromJson(httpResponse, AuthResponsePuntored.class);
+        return new AuthResponsePuntored(authResponsePuntored.getToken());
+
     }
 
     public BuyResponsePuntored buyRecharge(String token, RechargeRequest rechargeRequest) {
+        String jsonRequest = new BuyRequestPuntored(
+                rechargeRequest.getOperatorId(),
+                rechargeRequest.getPhoneNumber(),
+                rechargeRequest.getAmount()
+        ).toString();
 
-        String jsonRequest = new BuyRequestPuntored(rechargeRequest.getOperatorId(), rechargeRequest.getPhoneNumber(), rechargeRequest.getAmount()).toString();
+        log.info("Request BuyRecharge PuntoRed: {}", jsonRequest);
+        String httpResponse = puntoRedProxy(jsonRequest, "/buy", false, true, token);
 
+        if (httpResponse == null) {
+            throw new AuthFailedException(GENERIC_SYSTEM_ERROR.getMessage());
+        }
+
+        log.info("Response BuyRecharge PuntoRed: {}", httpResponse);
+        return gson.fromJson(httpResponse, BuyResponsePuntored.class);
+    }
+
+    public List<SuppliersResponsePuntored> getSuppliers(String token) {
         try {
-            log.info("Request BuyRecharge PuntoRed: {}", jsonRequest);
-            String httpResponse = puntoRedProxy(jsonRequest, "/buy", false, true, token);
-            log.info("Response BuyRecharge PuntoRed: {}", httpResponse);
+            HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+                    .uri(URI.create(baseUrl + "/getSuppliers"))
+                    .header("Authorization", token)
+                    .GET()
+                    .timeout(Duration.ofSeconds(10));
 
-            return gson.fromJson(httpResponse, BuyResponsePuntored.class);
-        } catch (Exception e) {
-            log.error("Error BuyRecharge PuntoRed: ({})", e.getMessage());
+            HttpRequest httpRequest = requestBuilder.build();
+            HttpResponse<String> httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+            log.info("Response getSuppliers PuntoRed: {}", httpResponse);
+
+            Type listType = new TypeToken<List<SuppliersResponsePuntored>>() {
+            }.getType();
+
+            return gson.fromJson(httpResponse.body(), listType);
+        } catch (Exception ex) {
+            log.error("erro al solicitar los Suppliers {}", ex.getMessage());
             return null;
         }
     }
 
-    public List<SuppliersResponsePuntored> getSuppliers(String token) throws IOException, InterruptedException {
-        HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
-                .uri(URI.create(baseUrl + "/getSuppliers"))
-                .header("Authorization", token)
-                .GET()
-                .timeout(Duration.ofSeconds(10));
-
-        HttpRequest httpRequest = requestBuilder.build();
-        HttpResponse<String> httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-        log.info("Response getSuppliers PuntoRed: {}", httpResponse);
-        Type listType = new TypeToken<List<SuppliersResponsePuntored>>(){}.getType();
-
-        return gson.fromJson(httpResponse.body(), listType);
-
-    }
-
-
-
-
 }
+
