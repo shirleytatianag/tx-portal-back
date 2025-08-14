@@ -34,7 +34,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: java-app
-          path: /build/libs/*.jar
+          path: build/libs/*.jar
 
   deploy:
     runs-on: ubuntu-latest
@@ -62,5 +62,5 @@ jobs:
         with:
           app-name: 'api-tx-portal'
           slot-name: 'Production'
-          package: 'tx-portal-0.0.1-SNAPSHOT.jar'
+          package: '*.jar'
           
