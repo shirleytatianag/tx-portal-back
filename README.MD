@@ -63,10 +63,10 @@ Antes de ejecutar el backend, debe existir en PostgreSQL la base de datos llamad
 
 ----------
 
-### 🔹 Configuración (`application.yml`)
+### ⚙️ Configuración (`application.yml`)
 
 El proyecto utiliza **`application.yml`** para las variables de configuración, solo debes modificar las que ves a continuación.  
-Ejemplo:
+**Ejemplo:**
 
 ```yaml
 spring:
@@ -74,7 +74,13 @@ spring:
     url: jdbc:postgresql://localhost:5432/transaccional_portal
     username: <tu usuario>
     password: <tu contraseña>
+cors:
+  allowed-origins: http://localhost:3000
 ```
+
+⚠️ **Importante:** Actualmente las credenciales están en `application.yml` solo para fines de producción.  
+En un futuro, se deben mover a variables de entorno para mayor seguridad.
+
 ----------
 
 ### 🔹 Pasos de Instalación
