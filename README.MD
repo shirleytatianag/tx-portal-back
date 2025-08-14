@@ -100,13 +100,6 @@ spring:
 
 ----------
 
-### 🔹 Crendenciales de inicio de sesión en la plataforma
-
-Usuario: `admin`  
-Contraseña: `12345`
-
-----------
-
 ## 📄 Documentación de la API
 
 Este backend cuenta con **Swagger** para visualizar y probar los endpoints.  
