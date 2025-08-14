@@ -29,16 +29,16 @@ import static com.example.portal.transactional_portal.common.enums.Messages.GENE
 public class PuntoredClient {
 
     @Value("${settings.puntored.base-url}")
-    private String baseUrl;
+    public String baseUrl;
 
     @Value("${settings.puntored.api-key}")
-    private String apiKey;
+    public String apiKey;
 
     @Value("${settings.puntored.user}")
-    private String user;
+    public String user;
 
     @Value("${settings.puntored.password}")
-    private String password;
+    public String password;
 
     String contentType = "application/json";
 
@@ -128,7 +128,7 @@ public class PuntoredClient {
 
             return gson.fromJson(httpResponse.body(), listType);
         } catch (Exception ex) {
-            log.error("erro al solicitar los Suppliers {}", ex.getMessage());
+            log.error("error al solicitar los Suppliers {}", ex.getMessage());
             return null;
         }
     }
