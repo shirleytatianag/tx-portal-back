@@ -6,9 +6,9 @@ server:
       timeout: 300s
 spring:
   datasource:
-    password: 12345
-    url: jdbc:postgresql://localhost:5432/transactional-portal
-    username: postgres
+    password: npg_BCb5pDLgK7Gf
+    url: jdbc:postgresql://ep-dark-mountain-adrpuebo-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&channelBinding=require
+    username: neondb_owner
   jpa:
     generate-ddl: false
     hibernate.ddl-auto: update
