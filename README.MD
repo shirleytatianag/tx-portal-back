@@ -103,9 +103,14 @@ spring:
 ## 📄 Documentación de la API
 
 Este backend cuenta con **Swagger** para visualizar y probar los endpoints.  
-Una vez en ejecución, accede a:
+
+Una vez en ejecución em ambiente local, accede a:
 
 👉 [http://localhost:8009/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
+
+#### La API desplegada en Azure está disponible en el siguiente enlace:
+
+👉 [https://api-tx-portal.azurewebsites.net/app/swagger-ui/index.html#/](https://api-tx-portal.azurewebsites.net/app/swagger-ui/index.html#/)
 
 ----------
 
