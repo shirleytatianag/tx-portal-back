@@ -29,5 +29,5 @@ settings:
     user: user0147
     password: '#3Q34Sh0NlDS'
   cors:
-    allowed-origins: http://localhost:3000, https://tx-portal-front.vercel.app
+    allowed-origins: https://tx-portal-front.vercel.app
 
